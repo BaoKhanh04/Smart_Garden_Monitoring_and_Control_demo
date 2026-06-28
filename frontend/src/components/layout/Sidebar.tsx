@@ -20,6 +20,7 @@ import {
   User,
   Users,
   Workflow,
+  Brain,
   type LucideIcon
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -109,6 +110,7 @@ const navGroups: NavGroup[] = [
       { label: 'Phát hiện bệnh', path: '/dashboard/disease-detection', icon: Bug },
       { label: 'Dự đoán nguy cơ', path: '/dashboard/disease-risk', icon: TrendingUp },
       { label: 'Gợi ý AI', path: '/dashboard/recommendations', icon: Lightbulb },
+      { label: 'Tưới nước bằng AI', path: '/dashboard/ai-irrigation', icon: Brain },
       { label: 'Phân tích lịch sử', path: '/dashboard/analytics', icon: BarChart3 },
       { label: 'Tiêu thụ nước', path: '/dashboard/water-usage', icon: Droplets },
       { label: 'Tiêu thụ điện', path: '/dashboard/power-monitoring', icon: Zap },
@@ -129,7 +131,7 @@ const navGroups: NavGroup[] = [
   },
 ]
 
-const ownerOnlyPaths = ['/settings/members', '/settings/thresholds', '/settings/rules', '/settings/gardens']
+const ownerOnlyPaths = ['/settings/members', '/settings/thresholds', '/settings/rules', '/settings/gardens', '/dashboard/ai-irrigation', '/dashboard/disease-detection', '/dashboard/disease-risk', '/dashboard/recommendations', '/dashboard/analytics', '/dashboard/water-usage', '/dashboard/power-monitoring', '/dashboard/harvest-prediction']
 
 export default function Sidebar() {
   const location = useLocation()

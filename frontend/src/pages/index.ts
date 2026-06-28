@@ -22,3 +22,5 @@ export { default as ThresholdsPage } from './ThresholdsPage'
 export { default as RulesPage } from './RulesPage'
 export { default as DeviceHealthPage } from './DeviceHealthPage'
 export { default as GardensPage } from './GardensPage'
+export { default as AIIrrigationPage } from './AIIrrigationPage'
+

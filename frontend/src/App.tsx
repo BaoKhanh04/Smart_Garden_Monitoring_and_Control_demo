@@ -8,6 +8,7 @@ import RegisterPage from '@/pages/RegisterPage'
 import OverviewPage from '@/pages/OverviewPage'
 import ControlPage from '@/pages/ControlPage'
 import IrrigationPage from '@/pages/IrrigationPage'
+import AIIrrigationPage from '@/pages/AIIrrigationPage'
 import DiseaseDetectionPage from '@/pages/DiseaseDetectionPage'
 import DiseaseRiskPage from '@/pages/DiseaseRiskPage'
 import RecommendationsPage from '@/pages/RecommendationsPage'
@@ -47,6 +48,7 @@ function AppRoutes() {
         <Route path="dashboard/overview" element={<OverviewPage />} />
         <Route path="dashboard/control" element={<ControlPage />} />
         <Route path="dashboard/irrigation" element={<IrrigationPage />} />
+        <Route path="dashboard/ai-irrigation" element={<ProtectedRoute ownerOnly><AIIrrigationPage /></ProtectedRoute>} />
         <Route path="dashboard/disease-detection" element={<ProtectedRoute ownerOnly><DiseaseDetectionPage /></ProtectedRoute>} />
         <Route path="dashboard/disease-risk" element={<ProtectedRoute ownerOnly><DiseaseRiskPage /></ProtectedRoute>} />
         <Route path="dashboard/recommendations" element={<ProtectedRoute ownerOnly><RecommendationsPage /></ProtectedRoute>} />

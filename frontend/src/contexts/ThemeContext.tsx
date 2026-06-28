@@ -13,7 +13,7 @@ const THEME_KEY = 'sgmc_theme'
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setTheme] = useState<Theme>(() => {
     const saved = localStorage.getItem(THEME_KEY) as Theme | null
-    return saved || 'dark'
+    return saved || 'light'
   })
 
   useEffect(() => {
