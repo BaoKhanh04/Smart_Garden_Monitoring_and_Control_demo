@@ -206,32 +206,38 @@ export const MOCK_RECOMMENDATIONS: Recommendation[] = [
 export const MOCK_DISEASE_SCANS: DiseaseScan[] = [
   {
     id: 'scan_001',
-    timestamp: '2026-06-21T08:30:15Z',
-    image_url: 'https://picsum.photos/id/1067/800/600',
-    annotated_image_url: 'https://picsum.photos/id/1067/800/600',
-    detections: [{ class: 'Brown Spot', confidence: 92.5, box: [120, 80, 240, 310] }],
+    timestamp: '2026-06-29T08:30:15Z',
+    image_url: '/src/assets/lacay.jpg',
+    annotated_image_url: '/src/assets/lacay.jpg',
+    detections: [
+      { class: 'Brown Spot', confidence: 92.5, box: [280, 25, 480, 280] }, // Top-center target rings
+      { class: 'Brown Spot', confidence: 89.2, box: [160, 90, 320, 220] },  // Top-left lesion
+      { class: 'Brown Spot', confidence: 88.0, box: [220, 310, 640, 510] }, // Bottom-center large lesion
+      { class: 'Brown Spot', confidence: 85.4, box: [480, 200, 680, 580] }  // Mid-right vein lesion
+    ],
     status: 'Diseased',
-    recommendation: 'Phun thuốc Mancozeb (nồng độ 50g/lít) vào buổi chiều mát. Giảm độ ẩm không khí xung quanh lá cây bằng cách bật quạt thông gió.'
+    recommendation: 'Phun thuốc Mancozeb (nồng độ 50g/lít) hoặc Chlorothalonil vào buổi chiều mát. Cắt bỏ các lá gốc bị nhiễm nặng để tránh nấm lây lan lên các tầng lá trên. Giảm độ ẩm không khí xung quanh tán lá.'
   },
   {
     id: 'scan_002',
-    timestamp: '2026-06-20T17:15:00Z',
-    image_url: 'https://picsum.photos/id/1070/800/600',
-    annotated_image_url: 'https://picsum.photos/id/1070/800/600',
+    timestamp: '2026-06-28T17:15:00Z',
+    image_url: '/src/assets/lacay1.jpg',
+    annotated_image_url: '/src/assets/lacay1.jpg',
     detections: [],
     status: 'Healthy',
-    recommendation: 'Cây khỏe mạnh bình thường. Duy trì chế độ tưới nước tự động hiện tại.'
+    recommendation: 'Cây khỏe mạnh bình thường. Duy trì chế độ chăm sóc và tưới nước tự động theo lịch của vườn.'
   },
   {
     id: 'scan_003',
-    timestamp: '2026-06-20T08:00:00Z',
-    image_url: 'https://picsum.photos/id/1080/800/600',
-    annotated_image_url: 'https://picsum.photos/id/1080/800/600',
-    detections: [{ class: 'Powdery Mildew', confidence: 78.3, box: [50, 100, 200, 250] }],
-    status: 'Diseased',
-    recommendation: 'Phát hiện bệnh Phấn trắng mức nhẹ. Có thể xử lý bằng nước pha giấm (1:10) phun trực tiếp lên lá.'
+    timestamp: '2026-06-27T08:00:00Z',
+    image_url: '/src/assets/lacay1.jpg',
+    annotated_image_url: '/src/assets/lacay1.jpg',
+    detections: [],
+    status: 'Healthy',
+    recommendation: 'Cây sinh trưởng tốt, không có dấu hiệu bệnh hại nấm hay vi khuẩn. Tiếp tục theo dõi định kỳ.'
   }
 ]
+
 
 export const MOCK_WATER_USAGE: WaterUsageData = {
   summary: { total_liters: 142.5, change_pct: -8.2, saved_vs_baseline_pct: 27.4 },

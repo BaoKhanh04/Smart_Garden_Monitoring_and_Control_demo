@@ -1,80 +1,286 @@
-# Smart Garden Control Dashboard (SGMC) - Frontend Demo
+Tôi tổng hợp lại theo hướng **giao diện AI quét bệnh lá + vẫn giữ Heatmap nhưng tập trung đúng vùng bệnh**.
 
-A comprehensive frontend prototype for a Smart Garden IoT + AI Dashboard, built with React, TypeScript, Tailwind CSS v4, and Recharts. This is a **standalone demo** with mock data and mock WebSocket — no backend required.
+Mục tiêu giao diện:
 
-## Tech Stack
+> Người dùng nhìn vào là hiểu: "AI đã tìm thấy bệnh ở đâu, bệnh gì, mức độ bao nhiêu"
+> Không hiển thị quá nhiều thông tin kỹ thuật.
 
-- **Framework:** React 18 + TypeScript
-- **Build Tool:** Vite 8
-- **Styling:** Tailwind CSS v4 (CSS-first configuration)
-- **Charts:** Recharts
-- **Icons:** Lucide React
-- **Forms:** React Hook Form + Zod
-- **Routing:** React Router v7
-- **Fonts:** Inter (body) + Outfit (headings)
+---
 
-## Features (23/23 implemented)
+# 1. Khu vực ảnh quét chính (GIỮ + chỉnh)
 
-### Core (MVP)
-- F-01: Realtime Monitoring Dashboard with sensor cards + sparklines
-- F-02: Manual Relay Control with Auto/Manual/Fallback modes
-- F-03: AI Disease Detection with bounding box overlays
-- F-04: Smart Irrigation Schedule with timeline view
-- F-05: Push Notifications with bell dropdown + history page
-- F-06: User & Role Management (Login, Register, Profile, Members)
-- F-07: Historical Analytics with multi-sensor charts
-- F-08: Device & Threshold Configuration with range sliders
+Hiện tại:
 
-### Extended
-- F-09: Plant Health Score with radial gauge
-- F-10: Weather Forecast (widget + detail page)
-- F-11: AI Recommendation Feed
-- F-12: Water Usage Analytics
-- F-13: Disease Risk Prediction
-- F-14: Harvest Prediction with countdown
-- F-15: Plant Growth Tracking with timeline slider
-- F-16: Smart Rule Engine (IF-THEN builder)
-- F-17: Power Consumption Monitoring
-- F-18: Device Health Monitoring
-- F-19: Multi-Garden Management
-- F-20: Camera Live Streaming (mock)
-- F-21: Photo History Gallery
-- F-22: AI Chatbot Floating Widget
-- F-23: Farming Log Timeline
+* Lá
+* Box đỏ
+* Label bệnh
+* Heatmap rải toàn lá
 
-## Setup
-
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
-Open http://localhost:5173 in your browser.
-
-## Test Accounts
-
-See [TEST_ACCOUNTS.md](./TEST_ACCOUNTS.md) for login credentials and role details.
-
-## Design System
-
-- **Theme:** Dark slate with emerald primary accent
-- **CSS Variables:** Uses oklch color space for consistent theming
-- **Breakpoints:** Desktop (1200px+), Tablet (768-1199px), Mobile (375-767px)
-- **Animation:** Micro-animations including count-up, pulse, shimmer, camera flash
-
-## Project Structure
+Nên đổi thành:
 
 ```
-src/
-  components/
-    layout/        # Sidebar, Header, AppLayout, Chatbot
-  contexts/        # AuthContext, AppContext
-  mocks/           # Mock data (sensors, gardens, recommendations...)
-  pages/           # All 22 route pages
-  types/           # TypeScript interfaces
-  lib/             # Utilities (cn)
-  App.tsx          # Router setup
-  main.tsx         # Entry point
-  index.css        # Tailwind config + CSS variables
+ẢNH PHÂN TÍCH
+
++-----------------------+
+|                       |
+|       Lá cây          |
+|          ███          |
+|        ██████         |
+|       vùng bệnh       |
+|                       |
++-----------------------+
+
+Vùng bệnh phát hiện:
+● 1 khu vực
+
+Độ tin cậy:
+92.5%
 ```
+
+Heatmap chỉ nằm quanh vùng:
+
+```
+Không nên:
+
+████████████
+██  lá   ██
+████████████
+(nóng khắp nơi)
+
+
+Nên:
+
+        lá
+
+       🟢🟢
+      🟡🔴🟡
+       🟢🟢
+
+    vùng bệnh
+```
+
+---
+
+# 2. Heatmap Scan (GIỮ)
+
+Nhưng đổi cách hiển thị.
+
+Không:
+
+```
+Quét bản đồ nhiệt
+
+Ảnh 1
+Ảnh 2
+Ảnh 3
+Ảnh 4
+Ảnh 5
+```
+
+Vì nhìn như AI đang thử nghiệm.
+
+Nên:
+
+```
+Phân tích vùng bệnh
+
+[Ảnh gốc]
+
+[Heatmap tập trung]
+
+[Vùng AI nhận diện]
+```
+
+3 trạng thái:
+
+### Ảnh gốc
+
+```
+🍃
+```
+
+### Heatmap
+
+```
+🍃
+  🔴
+ 🔴🔴
+  🔴
+
+```
+
+### Vùng bệnh
+
+```
+🍃
+ ┌─────┐
+ │đốm  │
+ └─────┘
+```
+
+---
+
+# 3. Bỏ khỏi giao diện
+
+Bỏ:
+
+❌ Tọa độ
+
+```
+X:180
+Y:195
+```
+
+→ chỉ là debug
+
+❌ FPS
+
+```
+60 FPS
+```
+
+→ không liên quan người dùng
+
+❌ Camera:
+
+```
+4K Spectral
+```
+
+→ đưa vào cài đặt thiết bị
+
+❌ R-Forest
+
+```
+Mô hình xử lý:
+R-Forest
+```
+
+→ thay bằng:
+
+```
+AI Vision Analysis
+```
+
+---
+
+# 4. Khung kết quả bên phải (GIỮ)
+
+Thiết kế lại:
+
+```
+⚠ CẢNH BÁO BỆNH HẠI
+
+
+Bệnh đốm nâu
+
+Alternaria solani
+
+
+Mức độ:
+CAO
+
+
+Độ tin cậy:
+92.5%
+
+
+Vùng ảnh hưởng:
+1 vùng
+
+
+[ Xem phác đồ ]
+```
+
+---
+
+# 5. Thêm trạng thái AI
+
+Ngay dưới ảnh:
+
+```
+AI ANALYSIS
+
+✓ Đã phát hiện lá
+✓ Đã xác định vùng bất thường
+✓ Đã phân loại bệnh
+✓ Đã đánh giá mức độ
+```
+
+---
+
+# 6. Lịch sử quét bên trái
+
+Hiện tại:
+
+```
+03:30
+12:15
+03:00
+```
+
+Nên đổi:
+
+```
+29/06 03:30
+
+Đốm nâu
+92%
+
+
+28/06 12:15
+
+Bình thường
+98%
+```
+
+---
+
+# Layout cuối cùng:
+
+```
+------------------------------------------------
+
+        ẢNH LÁ                 KẾT QUẢ
+
+
+        [ Lá cây ]              Bệnh đốm nâu
+
+        [ Heatmap ]             Mức độ: Cao
+
+        [ vùng bệnh ]           Tin cậy:92%
+
+                                [Phác đồ]
+
+
+------------------------------------------------
+
+Heatmap phân tích vùng bệnh
+
+[Ảnh gốc] [Heatmap] [Khoanh vùng]
+
+
+------------------------------------------------
+
+Lịch sử quét
+
+
+------------------------------------------------
+```
+
+Kết luận:
+
+Giữ:
+✅ Heatmap
+✅ Khoanh vùng bệnh
+✅ Confidence
+✅ Mức độ bệnh
+
+Sửa:
+
+* Heatmap chỉ tập trung quanh vùng bất thường
+* Không lan ra toàn lá
+* Không hiển thị thông số kỹ thuật ML
+* Biến màn hình từ "AI debug" thành "AI nông nghiệp cho người dùng"
+
+Giao diện hiện tại của bạn chỉ cần chỉnh theo hướng này là hợp lý.

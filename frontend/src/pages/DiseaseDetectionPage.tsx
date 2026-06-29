@@ -7,58 +7,19 @@ import {
   AlertTriangle,
   CheckCircle,
   FileText,
-  Video,
-  Activity,
-  Cpu,
   Layers,
   ChevronLeft,
   ChevronRight,
   RotateCcw,
   Camera,
   Loader2,
-  Check
+  Check,
+  Cpu
 } from 'lucide-react'
 import type { DiseaseScan } from '@/types'
 import lacayImg from '@/assets/lacay.jpg'
-
-// Saliency Heatmap Scan Thumbnail Helper
-interface SaliencyThumbnailProps {
-  label: string
-  gradientStyle?: string
-  isPurple?: boolean
-}
-
-function SaliencyThumbnail({ label, gradientStyle, isPurple = true }: SaliencyThumbnailProps) {
-  return (
-    <div className="flex flex-col gap-2">
-      <div className="relative aspect-[4/3] rounded-xl overflow-hidden border border-border/40 bg-slate-900 flex items-center justify-center group hover:border-emerald-500/30 transition-all duration-300 shadow-sm">
-        {/* Base Leaf Image */}
-        <img
-          src={lacayImg}
-          alt={label}
-          className={cn(
-            "w-full h-full object-cover select-none group-hover:scale-105 transition-all duration-500",
-            isPurple ? "filter brightness-[0.85] contrast-[1.15] saturate-[1.8] hue-rotate-[220deg]" : ""
-          )}
-          draggable={false}
-        />
-        
-        {/* Saliency Gradient Overlay */}
-        {gradientStyle && (
-          <div
-            className="absolute inset-0 opacity-80 mix-blend-hard-light pointer-events-none transition-all duration-300 group-hover:opacity-90 animate-fade-in"
-            style={{ background: gradientStyle }}
-          />
-        )}
-      </div>
-      <div className="text-center">
-        <span className="text-[10px] font-mono font-bold text-muted-foreground block truncate uppercase tracking-wide">
-          {label}
-        </span>
-      </div>
-    </div>
-  )
-}
+import lacay1Img from '@/assets/lacay1.jpg'
+import lacayheatmapImg from '@/assets/lacayheatmap.jpg'
 
 export default function DiseaseDetectionPage() {
   const { diseaseScans } = useApp()
@@ -117,40 +78,6 @@ export default function DiseaseDetectionPage() {
     }
   }, [diseaseScans, selectedScan])
 
-  // Helpers
-  const formatToTime = (timestampStr: string) => {
-    const date = new Date(timestampStr)
-    return date.toLocaleTimeString('vi-VN', {
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: true
-    })
-  }
-
-  // Dynamic coordinates mapping based on scan bounding box center
-  const getCoordinates = (scan: DiseaseScan | null) => {
-    if (scan && scan.detections.length > 0) {
-      const [xMin, yMin, xMax, yMax] = scan.detections[0].box
-      const x = ((xMin + xMax) / 2).toFixed(4)
-      const y = ((yMin + yMax) / 2).toFixed(4)
-      return { x, y }
-    }
-    return { x: '42.3487', y: '86.9601' }
-  }
-
-  // Dynamic cellular attributes mapping based on health status
-  const getCellularAttributes = (scan: DiseaseScan | null) => {
-    if (!scan) return { chlorophyll: '78%', turgor: 'BÌNH THƯỜNG', stomata: 'MỞ', nitrogen: '4.2%' }
-    if (scan.status === 'Healthy') {
-      return { chlorophyll: '82%', turgor: 'BÌNH THƯỜNG', stomata: 'MỞ', nitrogen: '4.5%' }
-    }
-    if (scan.detections[0]?.class === 'Brown Spot') {
-      return { chlorophyll: '58%', turgor: 'THIẾU HỤT', stomata: 'HẠN CHẾ', nitrogen: '3.8%' }
-    }
-    // Powdery Mildew
-    return { chlorophyll: '64%', turgor: 'BÌNH THƯỜNG', stomata: 'ĐÓNG', nitrogen: '4.0%' }
-  }
-
   const getDiseaseScientificName = (diseaseClass: string) => {
     if (diseaseClass === 'Brown Spot') return 'Alternaria solani'
     if (diseaseClass === 'Powdery Mildew') return 'Podosphaera xanthii'
@@ -161,6 +88,15 @@ export default function DiseaseDetectionPage() {
     if (diseaseClass === 'Brown Spot') return 'Bệnh đốm nâu (Early Blight)'
     if (diseaseClass === 'Powdery Mildew') return 'Bệnh phấn trắng (Powdery Mildew)'
     return 'Cây khỏe mạnh'
+  }
+
+  // Resolve scan image based on status
+  const getScanImage = (scan: DiseaseScan | null) => {
+    if (!scan) return lacayImg
+    if (scan.status === 'Healthy') {
+      return lacay1Img
+    }
+    return lacayImg
   }
 
   // Mock report generation trigger
@@ -185,12 +121,10 @@ export default function DiseaseDetectionPage() {
     }, 1200)
   }
 
-  const coordinates = getCoordinates(selectedScan)
-  const cellAttrs = getCellularAttributes(selectedScan)
   const confidenceScore = selectedScan
     ? selectedScan.detections.length > 0
       ? selectedScan.detections[0].confidence
-      : 99.4
+      : 98.6
     : 0
 
   return (
@@ -255,7 +189,7 @@ export default function DiseaseDetectionPage() {
         }
       `}</style>
 
-      {/* Left Column (Live Scan & Diagnostic Visualizer) */}
+      {/* Left/Center Column (Live Scan & Diagnostic Visualizer) */}
       <div className="flex-1 flex flex-col gap-5 min-w-0">
         {/* Diagnostic Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
@@ -264,7 +198,7 @@ export default function DiseaseDetectionPage() {
               Xem chẩn đoán trực tiếp
             </h1>
             <p className="text-xs text-muted-foreground italic mt-0.5 font-mono">
-              Phân tích phổ thời gian thực của Solanum lycopersicum
+              AI chẩn đoán bệnh lá cây cà chua
             </p>
           </div>
           
@@ -279,32 +213,31 @@ export default function DiseaseDetectionPage() {
           </div>
         </div>
 
-        {/* Live Scanner Viewport Card (Displaying lacay.jpg) */}
+        {/* Live Scanner Viewport Card (Displaying active leaf) */}
         {selectedScan ? (
           <div className="relative aspect-video lg:aspect-auto lg:h-[450px] bg-slate-950/70 border border-border/60 rounded-2xl overflow-hidden flex items-center justify-center p-6 group">
-            {/* Floating Top-Left Target Coordinates Box */}
-            <div className="absolute top-4 left-4 bg-slate-950/75 border border-white/10 rounded-xl p-2.5 text-left pointer-events-none select-none z-20 backdrop-blur-md shadow-lg">
-              <div className="text-[9px] text-white/40 font-mono font-bold uppercase tracking-wider">Tọa độ mục tiêu</div>
-              <div className="text-xs text-white/90 font-mono mt-0.5">X: {coordinates.x}</div>
-              <div className="text-xs text-white/90 font-mono">Y: {coordinates.y}</div>
-            </div>
-
             {/* Floating Pulsing Analyzing pathogens Box */}
-            <div className="absolute top-20 left-4 flex items-center gap-1.5 bg-emerald-500/10 border border-emerald-500/30 rounded-full px-3 py-1 z-20 animate-pulse pointer-events-none select-none">
+            <div className="absolute top-4 left-4 flex items-center gap-1.5 bg-emerald-500/10 border border-emerald-500/30 rounded-full px-3 py-1 z-20 animate-pulse pointer-events-none select-none">
               <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.8)]" />
               <span className="text-[9px] font-bold text-emerald-400 tracking-wider font-mono">
-                ĐANG PHÂN TÍCH MẦM BỆNH...
+                ĐANG PHÂN TÍCH LÁ...
               </span>
             </div>
 
-            {/* Floating Left Sidebar Panel: Real Captures (Vertical Thumbnails List) */}
-            <div className="absolute left-4 top-32 bottom-4 w-20 bg-slate-950/75 border border-white/10 rounded-2xl p-2 flex flex-col gap-2 z-20 backdrop-blur-md items-center overflow-y-auto scrollbar-none shadow-lg">
+            {/* Floating Left Sidebar Panel: Real Captures (Vertical Rich Details List) */}
+            <div className="absolute left-4 top-16 bottom-4 w-28 bg-slate-950/75 border border-white/10 rounded-2xl p-2 flex flex-col gap-2 z-20 backdrop-blur-md items-center overflow-y-auto scrollbar-none shadow-lg">
               <div className="text-[8px] text-white/45 font-bold uppercase tracking-widest text-center border-b border-white/10 pb-1.5 w-full">
-                Ảnh chụp
+                Lịch sử quét
               </div>
-              <div className="flex-1 w-full flex flex-col gap-2 pt-1.5">
+              <div className="flex-1 w-full flex flex-col gap-2.5 pt-1.5">
                 {diseaseScans.map((scan) => {
                   const isSelected = selectedScan.id === scan.id
+                  const dateObj = new Date(scan.timestamp)
+                  const formattedDate = dateObj.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' })
+                  const formattedTime = dateObj.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', hour12: false })
+                  const diseaseName = scan.status === 'Healthy' ? 'Bình thường' : scan.detections[0]?.class === 'Brown Spot' ? 'Đốm nâu' : 'Phấn trắng'
+                  const confidenceVal = scan.status === 'Healthy' ? 98 : Math.round(scan.detections[0]?.confidence || 90)
+
                   return (
                     <button
                       key={scan.id}
@@ -313,17 +246,29 @@ export default function DiseaseDetectionPage() {
                         resetView()
                       }}
                       className={cn(
-                        "relative w-16 h-16 rounded-lg overflow-hidden border transition-all duration-300 shrink-0 cursor-pointer",
+                        "relative w-full rounded-xl p-1.5 border text-left transition-all duration-300 shrink-0 cursor-pointer flex flex-col gap-1",
                         isSelected
-                          ? "border-[#00652c] ring-2 ring-[#00652c]/50 shadow-[0_0_8px_rgba(0,101,44,0.5)] scale-102"
-                          : "border-white/10 hover:border-white/30"
+                          ? "bg-primary/20 border-[#00652c] ring-1 ring-[#00652c]/50 shadow-[0_0_6px_rgba(0,101,44,0.4)]"
+                          : "bg-slate-950/40 border-white/5 hover:border-white/20"
                       )}
                     >
-                      <img src={lacayImg} alt="thumbnail" className="w-full h-full object-cover" />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
-                      <div className="absolute bottom-1 left-0 right-0 flex items-center justify-between px-1 text-[8px] font-semibold text-white/90">
-                        <Camera className="w-2.5 h-2.5 opacity-80" />
-                        <span>{formatToTime(scan.timestamp)}</span>
+                      <div className="flex items-center gap-1">
+                        <Camera className="w-2.5 h-2.5 text-white/60 shrink-0" />
+                        <span className="text-[7.5px] font-mono text-white/80 font-bold whitespace-nowrap">
+                          {formattedDate} {formattedTime}
+                        </span>
+                      </div>
+                      
+                      <div className="flex gap-1 items-center">
+                        <img src={getScanImage(scan)} className="w-5 h-5 rounded object-cover shrink-0" />
+                        <div className="min-w-0">
+                          <div className="text-[8.5px] font-bold text-white truncate leading-tight">
+                            {diseaseName}
+                          </div>
+                          <div className="text-[7.5px] font-bold text-emerald-400 font-mono leading-none mt-0.5">
+                            {confidenceVal}%
+                          </div>
+                        </div>
                       </div>
                     </button>
                   )
@@ -358,7 +303,7 @@ export default function DiseaseDetectionPage() {
             {/* Zoomable Image Container */}
             <div
               ref={imageContainerRef}
-              className="flex-1 w-full h-full overflow-hidden cursor-grab active:cursor-grabbing relative flex items-center justify-center p-4"
+              className="flex-1 w-full h-full overflow-hidden cursor-grab active:cursor-grabbing relative flex items-center justify-center p-4 pl-32"
               onWheel={handleWheel}
               onMouseDown={handleMouseDown}
               onMouseMove={handleMouseMove}
@@ -376,15 +321,15 @@ export default function DiseaseDetectionPage() {
                 {/* Laser scan line overlay within image container */}
                 <div className="absolute left-0 right-0 h-[1.5px] bg-teal-400/80 shadow-[0_0_8px_rgba(45,212,191,0.7)] z-10 pointer-events-none laser-scan-line" />
 
-                {/* Main leaf scan image: assets/lacay.jpg */}
+                {/* Main leaf scan image: resolved based on status */}
                 <img
-                  src={lacayImg}
+                  src={getScanImage(selectedScan)}
                   alt="Live diagnostics scan"
                   className="w-full h-full object-cover select-none"
                   draggable={false}
                 />
 
-                {/* Relative Bounding Boxes Overlay */}
+                {/* Relative Bounding Boxes & FOCUSED Heatmaps Overlay */}
                 {showBboxes &&
                   selectedScan.detections.map((detection, index) => {
                     const [xMin, yMin, xMax, yMax] = detection.box
@@ -394,19 +339,33 @@ export default function DiseaseDetectionPage() {
                     const height = ((yMax - yMin) / 600) * 100
 
                     return (
-                      <div
-                        key={index}
-                        className="absolute border border-red-500 bg-red-500/10 shadow-[0_0_8px_rgba(239,68,68,0.4)]"
-                        style={{
-                          left: `${left}%`,
-                          top: `${top}%`,
-                          width: `${width}%`,
-                          height: `${height}%`,
-                        }}
-                      >
-                        {/* Technical marker style bounding box label */}
-                        <div className="absolute -top-5 left-0 bg-red-500 text-white text-[9px] font-mono font-bold px-1.5 py-0.5 rounded whitespace-nowrap shadow-md">
-                          {detection.class.toUpperCase()} {Math.round(detection.confidence)}%
+                      <div key={index} className="absolute inset-0 pointer-events-none">
+                        {/* Localized Heatmap Overlay focused on the bounding box */}
+                        <div
+                          className="absolute opacity-90 mix-blend-hard-light pointer-events-none filter blur-[6px] animate-pulse"
+                          style={{
+                            left: `${left - width * 0.3}%`,
+                            top: `${top - height * 0.3}%`,
+                            width: `${width * 1.6}%`,
+                            height: `${height * 1.6}%`,
+                            borderRadius: '40% 60% 50% 55% / 50% 45% 60% 50%',
+                            background: 'radial-gradient(circle, rgba(239,68,68,0.95) 0%, rgba(245,158,11,0.85) 30%, rgba(34,197,94,0.5) 55%, rgba(59,130,246,0.2) 75%, transparent 90%)'
+                          }}
+                        />
+
+                        {/* Bounding Box Outline */}
+                        <div
+                          className="absolute border border-red-500 bg-red-500/5 shadow-[0_0_6px_rgba(239,68,68,0.3)] rounded"
+                          style={{
+                            left: `${left}%`,
+                            top: `${top}%`,
+                            width: `${width}%`,
+                            height: `${height}%`,
+                          }}
+                        >
+                          <div className="absolute -top-5 left-0 bg-red-500 text-white text-[9px] font-mono font-bold px-1.5 py-0.5 rounded whitespace-nowrap shadow-md">
+                            {getDiseaseVietnameseName(detection.class).toUpperCase()} {Math.round(detection.confidence)}%
+                          </div>
                         </div>
                       </div>
                     )
@@ -421,15 +380,40 @@ export default function DiseaseDetectionPage() {
           </div>
         )}
 
-        {/* Heatmap Scan (Saliency Map Grid) */}
+        {/* AI Analysis Checklist */}
+        <div className="bg-card border border-border/60 rounded-2xl p-4 flex flex-col gap-3 shadow-sm">
+          <h3 className="text-[9px] font-bold text-muted-foreground font-mono tracking-widest uppercase">
+            AI ANALYSIS STATUS
+          </h3>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs font-semibold text-foreground font-sans">
+            <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400">
+              <span className="w-4 h-4 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-[9px] shrink-0">✓</span>
+              Đã phát hiện lá cây
+            </div>
+            <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400">
+              <span className="w-4 h-4 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-[9px] shrink-0">✓</span>
+              Đã xác định vùng bất thường
+            </div>
+            <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400">
+              <span className="w-4 h-4 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-[9px] shrink-0">✓</span>
+              Đã phân loại bệnh hại
+            </div>
+            <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400">
+              <span className="w-4 h-4 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-[9px] shrink-0">✓</span>
+              Đã đánh giá mức độ
+            </div>
+          </div>
+        </div>
+
+        {/* Pathogen Saliency Analysis Grid */}
         <div className="bg-card border border-border rounded-2xl p-5 flex flex-col gap-4">
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-sm font-heading font-bold text-foreground">
-                Quét bản đồ nhiệt (Heatmap Scan)
+                Phân tích vùng bệnh
               </h2>
               <p className="text-[10px] text-muted-foreground mt-0.5 font-mono">
-                Bản đồ kích hoạt mạng nơ-ron (So sánh độ nhạy giữa các mô hình AI)
+                Các giai đoạn phân tích đặc trưng của lá bệnh trong mô hình thị giác máy tính
               </p>
             </div>
             
@@ -443,105 +427,171 @@ export default function DiseaseDetectionPage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-5 gap-3.5">
-            {/* Captured image */}
-            <SaliencyThumbnail label="Ảnh đã chụp" isPurple={false} />
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+            {/* Stage 1: Ảnh gốc */}
+            <div className="flex flex-col gap-2">
+              <div className="relative aspect-[4/3] rounded-xl overflow-hidden border border-border/40 bg-slate-900 shadow-sm group">
+                <img
+                  src={getScanImage(selectedScan)}
+                  alt="Ảnh gốc"
+                  className="w-full h-full object-cover select-none group-hover:scale-105 transition-all duration-500"
+                  draggable={false}
+                />
+              </div>
+              <span className="text-[10px] font-mono font-bold text-center text-muted-foreground uppercase tracking-wider">Ảnh gốc</span>
+            </div>
 
-            {/* MobileNetV2 */}
-            <SaliencyThumbnail
-              label="MobileNetV2"
-              isPurple={true}
-              gradientStyle="radial-gradient(circle at 50% 100%, rgba(239,68,68,0.95) 0%, rgba(245,158,11,0.85) 20%, rgba(16,185,129,0.7) 40%, rgba(59,130,246,0.5) 60%, transparent 85%)"
-            />
+            {/* Stage 2: Bản đồ nhiệt */}
+            <div className="flex flex-col gap-2">
+              <div className="relative aspect-[4/3] rounded-xl overflow-hidden border border-border/40 bg-slate-900 shadow-sm group">
+                <img
+                  src={selectedScan?.status === 'Healthy' ? lacay1Img : lacayheatmapImg}
+                  alt="Bản đồ nhiệt"
+                  className="w-full h-full object-cover select-none group-hover:scale-105 transition-all duration-500"
+                  draggable={false}
+                />
+              </div>
+              <span className="text-[10px] font-mono font-bold text-center text-muted-foreground uppercase tracking-wider">Bản đồ nhiệt</span>
+            </div>
 
-            {/* NasNetMobile */}
-            <SaliencyThumbnail
-              label="NasNetMobile"
-              isPurple={true}
-              gradientStyle="radial-gradient(circle at 65% 55%, rgba(239,68,68,0.95) 0%, rgba(245,158,11,0.85) 25%, rgba(16,185,129,0.7) 50%, rgba(59,130,246,0.4) 70%, transparent 90%)"
-            />
-
-            {/* Xception */}
-            <SaliencyThumbnail
-              label="Xception"
-              isPurple={true}
-              gradientStyle="radial-gradient(circle at 50% 50%, rgba(239,68,68,0.95) 0%, rgba(245,158,11,0.85) 20%, rgba(16,185,129,0.7) 40%, rgba(59,130,246,0.4) 60%, transparent 80%)"
-            />
-
-            {/* MobileNetV3 */}
-            <SaliencyThumbnail
-              label="MobileNetV3"
-              isPurple={true}
-              gradientStyle="radial-gradient(circle at 20% 25%, rgba(239,68,68,0.9) 0%, rgba(245,158,11,0.75) 25%, rgba(16,185,129,0.6) 45%, rgba(59,130,246,0.4) 65%, transparent 85%)"
-            />
+            {/* Stage 3: Vùng bệnh */}
+            <div className="flex flex-col gap-2">
+              <div className="relative aspect-[4/3] rounded-xl overflow-hidden border border-border/40 bg-slate-900 shadow-sm group">
+                <img
+                  src={getScanImage(selectedScan)}
+                  alt="Vùng bệnh"
+                  className="w-full h-full object-cover select-none group-hover:scale-105 transition-all duration-500"
+                  draggable={false}
+                />
+                {selectedScan && selectedScan.status === 'Diseased' && (
+                  selectedScan.detections.map((det, i) => {
+                    const [xMin, yMin, xMax, yMax] = det.box
+                    const left = (xMin / 800) * 100
+                    const top = (yMin / 600) * 100
+                    const width = ((xMax - xMin) / 800) * 100
+                    const height = ((yMax - yMin) / 600) * 100
+                    return (
+                      <div
+                        key={i}
+                        className="absolute border border-red-500 bg-red-500/10 shadow-[0_0_4px_rgba(239,68,68,0.3)] rounded"
+                        style={{
+                          left: `${left}%`,
+                          top: `${top}%`,
+                          width: `${width}%`,
+                          height: `${height}%`
+                        }}
+                      />
+                    )
+                  })
+                )}
+              </div>
+              <span className="text-[10px] font-mono font-bold text-center text-muted-foreground uppercase tracking-wider">Vùng nhận diện</span>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Right Column (Real-time AI Analysis Dashboard Sidebar) */}
+      {/* Right Column (AI Analysis Outcomes Sidebar) */}
       <div className="w-full lg:w-80 shrink-0 flex flex-col gap-5">
         <div>
           <h2 className="text-lg font-heading font-bold text-foreground tracking-tight flex items-center gap-1.5">
             Phân tích thời gian thực
           </h2>
           <div className="flex items-center gap-1 mt-1 font-mono">
-            <span className="w-1 h-1 rounded-full bg-emerald-500 animate-pulse" />
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
             <span className="text-[10px] font-bold text-muted-foreground tracking-wider uppercase">
-              AI ENGINE V4.2.0-ỔN ĐỊNH
+              AI VISION ANALYSIS
             </span>
           </div>
         </div>
 
         {/* Pathogen Diagnostic Alert Card */}
         {selectedScan && selectedScan.status === 'Diseased' ? (
-          <div className="bg-red-500/5 border border-red-500/20 rounded-2xl p-4 flex flex-col gap-3.5 shadow-[0_4px_12px_rgba(239,68,68,0.03)]">
+          <div className="bg-red-500/5 border border-red-500/20 rounded-2xl p-5 flex flex-col gap-3.5 shadow-sm">
             <div className="flex items-center gap-2 text-red-700 dark:text-red-400">
-              <AlertTriangle className="w-4 h-4 shrink-0" />
-              <h3 className="text-xs font-bold font-mono tracking-wider uppercase">Cảnh báo bệnh hại</h3>
+              <AlertTriangle className="w-4 h-4 shrink-0 animate-bounce" />
+              <h3 className="text-xs font-bold font-mono tracking-wider uppercase">CẢNH BÁO BỆNH HẠI</h3>
             </div>
             
-            <div>
-              <h4 className="text-sm font-semibold text-foreground">
+            <div className="space-y-1">
+              <h4 className="text-base font-bold text-foreground">
                 {getDiseaseVietnameseName(selectedScan.detections[0]?.class)}
               </h4>
-              <p className="text-[11px] text-muted-foreground italic mt-0.5 font-mono">
+              <p className="text-[11px] text-muted-foreground italic font-mono leading-none">
                 {getDiseaseScientificName(selectedScan.detections[0]?.class)}
               </p>
             </div>
 
-            <div className="flex items-center justify-between pt-2 border-t border-red-500/10 text-xs mt-1">
-              <span className="font-bold text-red-600 dark:text-red-400">Mức độ: Cao</span>
+            <div className="pt-2 border-t border-red-500/10 text-xs font-sans text-muted-foreground leading-relaxed">
+              Hệ thống phát hiện phiến lá xuất hiện quầng úa vàng rộng, tập trung các đốm hoại tử màu nâu sẫm dạng vòng đồng tâm (tương tự hình bia bắn) đặc trưng của nấm Alternaria solani. Mép lá có dấu hiệu héo khô cháy bìa.
+            </div>
+
+            <div className="pt-2.5 border-t border-red-500/10 space-y-2.5 text-xs font-sans">
+              <div className="flex justify-between">
+                <span className="text-muted-foreground font-medium">Mức độ:</span>
+                <span className="font-extrabold text-red-600 dark:text-red-400">CAO</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground font-medium">Độ tin cậy:</span>
+                <span className="font-bold font-mono text-foreground">{confidenceScore.toFixed(1)}%</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground font-medium">Vùng ảnh hưởng:</span>
+                <span className="font-bold text-foreground">{selectedScan.detections.length} vùng</span>
+              </div>
+            </div>
+
+            <div className="pt-2 flex justify-start">
               <button
                 onClick={() => setShowProtocolsModal(true)}
-                className="font-bold text-emerald-600 dark:text-emerald-400 hover:underline cursor-pointer transition-colors"
+                className="px-5 py-2 bg-red-600 hover:bg-red-700 text-white rounded-xl text-xs font-semibold cursor-pointer transition-colors shadow-sm"
               >
                 Xem phác đồ
               </button>
             </div>
           </div>
         ) : (
-          <div className="bg-emerald-500/5 border border-emerald-500/20 rounded-2xl p-4 flex flex-col gap-3.5 shadow-[0_4px_12px_rgba(16,185,129,0.03)]">
+          <div className="bg-emerald-500/5 border border-emerald-500/20 rounded-2xl p-5 flex flex-col gap-3.5 shadow-sm">
             <div className="flex items-center gap-2 text-emerald-700 dark:text-emerald-400">
               <CheckCircle className="w-4 h-4 shrink-0" />
               <h3 className="text-xs font-bold font-mono tracking-wider uppercase">Chỉ số sinh học bình thường</h3>
             </div>
             
-            <div>
-              <h4 className="text-sm font-semibold text-foreground">
+            <div className="space-y-1">
+              <h4 className="text-base font-bold text-foreground">
                 Không phát hiện bệnh hại
               </h4>
-              <p className="text-[11px] text-muted-foreground italic mt-0.5 font-mono">
+              <p className="text-[11px] text-muted-foreground italic font-mono leading-none">
                 Solanum lycopersicum
               </p>
             </div>
 
-            <div className="flex items-center justify-between pt-2 border-t border-emerald-500/10 text-xs mt-1">
-              <span className="font-bold text-emerald-600 dark:text-emerald-400">Mức độ: Không</span>
+            <div className="pt-2 border-t border-emerald-500/10 text-xs font-sans text-muted-foreground leading-relaxed">
+              <span className="font-bold text-emerald-700 dark:text-emerald-400 block mb-1">AI Phân tích nông nghiệp:</span>
+              Phiến lá có sắc tố xanh lục tự nhiên, phân bố gân lá đều đặn, không phát hiện quầng úa vàng hay đốm hoại tử nấm hại. Chỉ số sinh học hoàn toàn bình thường.
+            </div>
+
+            <div className="pt-2.5 border-t border-emerald-500/10 space-y-2.5 text-xs font-sans">
+              <div className="flex justify-between">
+                <span className="text-muted-foreground font-medium">Mức độ:</span>
+                <span className="font-bold text-emerald-600 dark:text-emerald-400">Không</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground font-medium">Độ tin cậy:</span>
+                <span className="font-bold font-mono text-foreground">{confidenceScore.toFixed(1)}%</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground font-medium">Vùng ảnh hưởng:</span>
+                <span className="font-bold text-foreground">0 vùng</span>
+              </div>
+            </div>
+
+            <div className="pt-2 flex justify-start">
               <button
                 onClick={() => setShowProtocolsModal(true)}
-                className="font-bold text-emerald-600 dark:text-emerald-400 hover:underline cursor-pointer transition-colors"
+                className="px-5 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs font-semibold cursor-pointer transition-colors shadow-sm"
               >
-                Xem phác đồ
+                Xem chẩn đoán
               </button>
             </div>
           </div>
@@ -551,73 +601,18 @@ export default function DiseaseDetectionPage() {
         <div className="bg-card border border-border rounded-2xl p-4 flex flex-col gap-2.5">
           <div className="flex items-end justify-between">
             <span className="text-xs text-muted-foreground font-sans">Độ tin cậy</span>
-            <span className="text-lg font-heading font-extrabold text-emerald-600 dark:text-emerald-400 leading-none">
+            <span className="text-lg font-heading font-extrabold text-[#00652c] leading-none">
               {confidenceScore.toFixed(1)}%
             </span>
           </div>
           <div className="w-full h-2.5 bg-muted rounded-full overflow-hidden border border-border/20">
             <div
-              className="h-full bg-emerald-500 rounded-full transition-all duration-500"
+              className="h-full bg-[#00652c] rounded-full transition-all duration-500"
               style={{ width: `${confidenceScore}%` }}
             />
           </div>
         </div>
 
-        {/* Compute & Processing Metrics Grid */}
-        <div className="grid grid-cols-2 gap-y-4 gap-x-2 py-4 border-t border-b border-border/80">
-          <div>
-            <div className="text-[10px] text-muted-foreground font-mono uppercase tracking-wider">Độ trễ tính toán</div>
-            <div className="text-sm font-semibold font-mono text-foreground mt-1 flex items-center gap-1.5">
-              <Activity className="w-3.5 h-3.5 text-muted-foreground" />
-              43ms
-            </div>
-          </div>
-          
-          <div>
-            <div className="text-[10px] text-muted-foreground font-mono uppercase tracking-wider">Mô hình xử lý</div>
-            <div className="text-sm font-semibold font-mono text-foreground mt-1 flex items-center gap-1.5">
-              <Cpu className="w-3.5 h-3.5 text-muted-foreground" />
-              R-Forest v4.2
-            </div>
-          </div>
-
-          <div>
-            <div className="text-[10px] text-muted-foreground font-mono uppercase tracking-wider">Đồng bộ luồng</div>
-            <div className="text-sm font-semibold font-mono text-foreground mt-1 flex items-center gap-1.5">
-              <Video className="w-3.5 h-3.5 text-muted-foreground" />
-              60 FPS
-            </div>
-          </div>
-
-          <div>
-            <div className="text-[10px] text-muted-foreground font-mono uppercase tracking-wider">Ống kính Camera</div>
-            <div className="text-sm font-semibold font-mono text-foreground mt-1 flex items-center gap-1.5">
-              <Layers className="w-3.5 h-3.5 text-muted-foreground" />
-              4K Spectral
-            </div>
-          </div>
-        </div>
-
-        {/* Cellular Attributes Section */}
-        <div className="flex flex-col gap-3">
-          <h3 className="text-[10px] font-bold text-muted-foreground font-mono tracking-widest uppercase">
-            CHỈ SỐ TẾ BÀO (CELLULAR ATTRIBUTES)
-          </h3>
-          <div className="flex flex-wrap gap-2">
-            <span className="inline-flex px-2.5 py-1 text-[10px] font-mono font-bold bg-teal-500/10 text-teal-600 dark:text-teal-400 border border-teal-500/20 rounded">
-              DIỆP LỤC: {cellAttrs.chlorophyll}
-            </span>
-            <span className="inline-flex px-2.5 py-1 text-[10px] font-mono font-bold bg-teal-500/10 text-teal-600 dark:text-teal-400 border border-teal-500/20 rounded">
-              ĐỘ TRƯƠNG NƯỚC: {cellAttrs.turgor}
-            </span>
-            <span className="inline-flex px-2.5 py-1 text-[10px] font-mono font-bold bg-muted text-muted-foreground border border-border/80 rounded">
-              KHÍ KHỔNG: {cellAttrs.stomata}
-            </span>
-            <span className="inline-flex px-2.5 py-1 text-[10px] font-mono font-bold bg-muted text-muted-foreground border border-border/80 rounded">
-              NỒNG ĐỘ ĐẠM: {cellAttrs.nitrogen}
-            </span>
-          </div>
-        </div>
 
         {/* Bottom Call Actions */}
         <div className="mt-2 flex flex-col gap-2.5">
